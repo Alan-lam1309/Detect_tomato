@@ -11,40 +11,81 @@ firebase_admin.initialize_app(
     cred, {"databaseURL": "https://detect-tomato-default-rtdb.firebaseio.com"}
 )
 
+
+class Details:
+    def __init__(self, class_name, mass, bbox, conf):
+        self.class_name = class_name
+        self.mass = float(mass)
+        self.bbox = bbox
+        self.conf = float(conf)
+
+
 # As an admin, the app has access to read and write all data, regradless of Security Rules
-tomato_ref = db.reference("tomato/")
-device_ref = db.reference("device/")
-# Lắng nghe các sự kiện cập nhật giá trị trên Firebase
-def on_update(event):
-    event.data # Giá trị mới nhất của node device
+def getRef(str):
+    tomato_ref = db.reference("tomato/")
+    device_ref = db.reference("device/")
+    if str == "tomato":
+        return tomato_ref
+    if str == "device":
+        return device_ref
+    return tomato_ref, device_ref
 
-listenertomato = tomato_ref.listen(on_update)
-listenerdevice = device_ref.listen(on_update) # Bắt đầu lắng nghe các sự kiện
 
-def getLastImg():
+def getLastImg(tomato_ref):
     imgLast = str(list(tomato_ref.get().keys())[-1])
     return imgLast
-        
-def updateInfo(option='', imgDetect='', quantity='', totalMass='', details={}):
-    
+
+
+def getInfoInit():
+    tomato_ref = getRef("tomato")
+    obj = tomato_ref.get()[getLastImg(tomato_ref)]
+
+    imgOri = obj["imgOri"]
+    imgDetect = obj["imgDetect"]
+    total = obj["totalMass"]
+    quantity = obj["quantity"]
+
+    img_root = decode(imgOri)
+    img_detected = decode(imgDetect)
+
+    details = obj["details"]
+    finalDetails = []
+    for x in details:
+        if(x!= None):
+            finalDetail = Details(
+                x["type"],
+                x["mass"],
+                x["bbox"],
+                x["conf"],
+            )
+            finalDetails.append(finalDetail)
+    return img_root, img_detected, total, quantity, finalDetails
+
+
+
+def updateInfo(option="", imgDetect="", quantity="", totalMass="", details={}):
     tomato_ref = db.reference("tomato/")
     child_ref = tomato_ref.child(option)
-    child_ref.update ({
-        'imgDetect': imgDetect,
-        'quantity': quantity,
-        'totalMass': totalMass,
-        'details': details
-    })
-    
-def add_img():
-    if device_ref.get()['addPic'] == "YES":
-        imgAdded = tomato_ref.get()[getLastImg()]['imgOri']
+    child_ref.update(
+        {
+            "imgDetect": imgDetect,
+            "quantity": quantity,
+            "totalMass": totalMass,
+            "details": details,
+        }
+    )
+
+
+def detectAndUpload():
+    tomato_ref, device_ref = getRef()
+    if device_ref.get()["addPic"] == "YES":
+        imgAdded = tomato_ref.get()[getLastImg(tomato_ref)]["imgOri"]
         imgAdded = decode(imgAdded)
         imgAdded.save("imgOri.jpg")
-        result_detect = detect('imgOri.jpg')
-        
-        path_imgDetect = str(result_detect[0].dirimg).replace('\\', '/')
-        path_txt = str(result_detect[0].dirtxt).replace('\\', '/')
+        result_detect = detect("imgOri.jpg")
+
+        path_imgDetect = str(result_detect[0].dirimg).replace("\\", "/")
+        path_txt = str(result_detect[0].dirtxt).replace("\\", "/")
 
         imgDetect = encodeImg(path_imgDetect)
         total, labels, lines = mass(path_txt, path_imgDetect)
@@ -54,20 +95,18 @@ def add_img():
         for label in labels:
             count += 1
             detail = {
-                'bbox': (f'{label.x} {label.y} {label.w} {label.h}'),
-                'mass': label.m,
-                'type': label.class_name,
-                'conf': label.c
+                "bbox": (f"{label.x} {label.y} {label.w} {label.h}"),
+                "mass": label.m,
+                "type": label.class_name,
+                "conf": label.c,
             }
             details[str(count)] = detail
-        
-        updateInfo(getLastImg(),imgDetect, quantity, total, details)
-        device_ref.update({
-            'addPic':'NO'
-        })
-      
+
+        updateInfo(getLastImg(tomato_ref), imgDetect, quantity, total, details)
+        device_ref.update({"addPic": "NO"})
+        return quantity, total, labels
+
+
 def a():
-    b=encodeImg('g.jpg')
+    b = encodeImg("g.jpg")
     print(b)
-    
-a()

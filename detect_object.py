@@ -7,16 +7,9 @@ import io
 
 # Load YOLO model
 def detect(src):
-    
     model = YOLO('last.pt',"v8") 
-
-    # Make prediction and get results
     results = model.predict(source = src, save = True, save_txt = True)
-
-    # print(results[0].boxes.xywhn[0])
-    # print(type(results[0].boxes.cls[0]))
     # print(results[0].dirtxt)
-    # print(results)
     
     return results
 
