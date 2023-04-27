@@ -21,7 +21,7 @@ class Details:
 
 
 # As an admin, the app has access to read and write all data, regradless of Security Rules
-def getRef(str):
+def getRef(str=''):
     tomato_ref = db.reference("tomato/")
     device_ref = db.reference("device/")
     if str == "tomato":
@@ -30,6 +30,17 @@ def getRef(str):
         return device_ref
     return tomato_ref, device_ref
 
+def valueTranfer(x):
+    x= int(x)
+    if(x == 0):
+        x='Red'
+        return x
+    if(x == 1):
+        x='Green'
+        return x
+    if(x==2):
+        x='HalfRed'
+        return x    
 
 def getLastImg(tomato_ref):
     imgLast = str(list(tomato_ref.get().keys())[-1])
@@ -53,7 +64,7 @@ def getInfoInit():
     for x in details:
         if(x!= None):
             finalDetail = Details(
-                x["type"],
+                valueTranfer(x["type"]),
                 x["mass"],
                 x["bbox"],
                 x["conf"],

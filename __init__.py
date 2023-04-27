@@ -1,59 +1,54 @@
 import tkinter as tk
-from tkinter import ttk
 from PIL import ImageTk, Image
 from tkinter import HORIZONTAL
 from firebase import *
 from detect_object import *
 
 root = tk.Tk()
-       
-
-img_root, img_detected, total, quantity, finalDetails = getInfoInit()
 
 
+img_root, img_detected, total, quantity, details = getInfoInit()
 
-def update_value_label(event): #function handle SCALE LABLE
+
+def update_value_label(event):  # function handle SCALE LABLE
     scale_value_label.configure(text="Current value: {}".format(round(scale.get(), 2)))
-    
-def save_coordinates(): #function handle INPUT next to SCALE
+
+
+def save_coordinates():  # function handle INPUT next to SCALE
     x = float(x_entry.get())
     y = float(y_entry.get())
-    coordinates_label.config(text=f"Coordinates: ({x}, {y})")    
+    coordinates_label.config(text=f"Coordinates: ({x}, {y})")
 
-    
+
 # LABEL AND IMAGE ROOT---------------------------------------------------------------------
-label_caption_root = ttk.Label(root, text="Root Image")
+label_caption_root = tk.Label(root, text="Root Image")
 label_caption_root.pack()
 label_caption_root.place(x=10, y=0)
 
-img_Root = ImageTk.PhotoImage(
-    img_root.resize((500, 300), Image.LANCZOS)
-)
-label_img_root = ttk.Label(root, text='')
-label_img_root.configure(image = img_Root)
+img_Root = ImageTk.PhotoImage(img_root.resize((500, 300), Image.LANCZOS))
+label_img_root = tk.Label(root, text="")
+label_img_root.configure(image=img_Root)
 label_img_root.pack()
 label_img_root.place(x=0, y=20, width=500)
 
 # LABEL AND IMAGE RESULT------------------------------------------
-label_caption_detected = ttk.Label(root, text="Detected Image")
+label_caption_detected = tk.Label(root, text="Detected Image")
 label_caption_detected.pack()
 label_caption_detected.place(x=510, y=0)
 
-img_Detected = ImageTk.PhotoImage(
-    img_detected.resize((500, 300), Image.LANCZOS)
-)
-label_img_detected = ttk.Label(root, image=img_Detected)
+img_Detected = ImageTk.PhotoImage(img_detected.resize((500, 300), Image.LANCZOS))
+label_img_detected = tk.Label(root, image=img_Detected)
 label_img_detected.pack()
 label_img_detected.place(x=500, y=20, width=500)
 
 # SCALE AND INPUT COORDINATES --------------------------------------------------------------
-scale_input_label = ttk.Label(root, text='You can choose the coordinates')
+scale_input_label = tk.Label(root, text="You can choose the coordinates")
 scale_input_label.pack()
 scale_input_label.place(x=400, y=340)
 
 # SCALE-----------------------
 current_value = tk.DoubleVar()
-scale = ttk.Scale(
+scale = tk.Scale(
     root,
     from_=0,
     to=100,
@@ -61,10 +56,10 @@ scale = ttk.Scale(
     command=update_value_label,
     variable=current_value,
 )
-scale_value_label = ttk.Label(root, text="Current value: {}".format(scale.get()))
+scale_value_label = tk.Label(root, text="Current value: {}".format(scale.get()))
 scale.pack()
 scale_value_label.pack()
-scale.place(x=100, y=380, width=380)
+scale.place(x=100, y=360, width=380)
 scale_value_label.place(x=150, y=400)
 
 # INPUT COORDINATES ------------------
@@ -73,14 +68,14 @@ x_label.pack()
 x_label.place(x=540, y=380)
 x_entry = tk.Entry(root)
 x_entry.pack()
-x_entry.place(x=560, y=380,width=50)
+x_entry.place(x=560, y=380, width=50)
 
 y_label = tk.Label(root, text="y:")
 y_label.pack()
 y_label.place(x=620, y=380)
 y_entry = tk.Entry(root)
 y_entry.pack()
-y_entry.place(x=640, y=380,width=50)
+y_entry.place(x=640, y=380, width=50)
 
 save_button = tk.Button(root, text="Save", command=save_coordinates)
 save_button.pack()
@@ -90,49 +85,96 @@ coordinates_label.pack()
 coordinates_label.place(x=750, y=380)
 
 # GRID thông tin ---------------------------------------------------------------
-frame = tk.Frame(root)
-frame.pack()
+# Tạo một Frame để chứa Canvas và Scrollbar
+canvas_frame = tk.Frame(root)
+canvas_frame.place(x=50, y=500)
 
-# Tạo các tiêu đề cho các cột
-col_1_label = tk.Label(frame, text="STT")
-col_2_label = tk.Label(frame, text="Type")
-col_3_label = tk.Label(frame, text="Mass")
-col_4_label = tk.Label(frame, text="Conference")
+# Tạo Canvas và Scrollbar
+canvas = tk.Canvas(canvas_frame, borderwidth=0, width=350)
+canvas.pack(side="left", fill="both", expand=True)
 
-# Đặt tiêu đề vào các vị trí tương ứng trên grid
+scrollbar = tk.Scrollbar(canvas_frame, orient="vertical", command=canvas.yview)
+scrollbar.pack(side="right", fill="y")
+
+# Thêm nội dung vào Canvas
+content_frame = tk.Frame(canvas)
+col_1_label = tk.Label(content_frame, text="STT", padx=20)
 col_1_label.grid(row=0, column=0)
+col_2_label = tk.Label(content_frame, text="Type", padx=20)
 col_2_label.grid(row=0, column=1)
+col_3_label = tk.Label(content_frame, text="Mass", padx=20)
 col_3_label.grid(row=0, column=2)
+col_4_label = tk.Label(content_frame, text="Conference", padx=20)
 col_4_label.grid(row=0, column=3)
 
-# Tạo các widget để đặt vào grid
-for i in range(1, 6):
-    for j in range(4):
-        label = tk.Label(frame, text=f"Row {i}, Column {j+1}")
-        label.grid(row=i, column=j)
+count = 0
+for x in details:
+    count += 1
+    label1 = tk.Label(content_frame, text=f"{count}", padx=20)
+    label1.grid(row=count, column=0)
+    label2 = tk.Label(content_frame, text=f"{x.class_name}", padx=20)
+    label2.grid(row=count, column=1)
+    label3 = tk.Label(content_frame, text=f"{x.mass}", padx=20)
+    label3.grid(row=count, column=2)
+    label4 = tk.Label(content_frame, text=f"{x.conf}", padx=20)
+    label4.grid(row=count, column=3)
+
+# Đặt nội dung vào Canvas
+canvas.create_window((0, 0), window=content_frame, anchor="nw")
+
+# Thiết lập canvas để tự điều chỉnh kích thước khi frame thay đổi
+def configure_canvas(event):
+    canvas.configure(scrollregion=canvas.bbox("all"))
+
+content_frame.bind("<Configure>", configure_canvas)
+
 
 
 
 def refresh_window():
     # code to refresh the window goes here
-    device_ref = getRef('device')
-    if device_ref.get()['addPic'] == "YES":
+    device_ref = getRef("device")
+    if device_ref.get()["addPic"] == "YES":
         quantity, totalMass, details = detectAndUpload()
-        img_root, img_detected, total, quantity, finalDetails = getInfoInit()
-        
+        img_root, img_detected, total, quantity, details = getInfoInit()
+
         img_Root = ImageTk.PhotoImage(img_root.resize((500, 300), Image.LANCZOS))
         label_img_root.configure(image=img_Root)
         label_img_root.image = img_Root
-        
-        img_Detected = ImageTk.PhotoImage(img_detected.resize((500, 300), Image.LANCZOS))
+
+        img_Detected = ImageTk.PhotoImage(
+            img_detected.resize((500, 300), Image.LANCZOS)
+        )
         label_img_detected.config(image=img_Detected)
         label_img_detected.image = img_Detected
         
-    root.after(1000, refresh_window) # refresh the window after 1000 milliseconds (1 second)
+        for widget in content_frame.winfo_children()[4:]:
+            widget.grid_forget()
+
+        for i, x in enumerate(details):
+            count = i + 1
+
+            # Cập nhật các giá trị mới cho các Label
+            label1 = tk.Label(content_frame, text=f"{count}", padx=20)
+            label1.grid(row=count, column=0)
+            label2 = tk.Label(content_frame, text=f"{x.class_name}", padx=20)
+            label2.grid(row=count, column=1)
+            label3 = tk.Label(content_frame, text=f"{x.mass}", padx=20)
+            label3.grid(row=count, column=2)
+            label4 = tk.Label(content_frame, text=f"{x.conf}", padx=20)
+            label4.grid(row=count, column=3)
+
+            canvas.update_idletasks()
+
+
+    root.after(
+        1000, refresh_window
+    )  # refresh the window after 1000 milliseconds (1 second)
+
 
 root.after(1000, refresh_window)
 root.title("Detect and classify tomatos")
-root.geometry("1000x700+200+50")
+root.geometry("1000x750+200+50")
 root.iconbitmap("")  # thay đổi biểu tượng
 root.resizable(False, False)  # không cho thay đổi kích thước cửa s
 root.mainloop()
