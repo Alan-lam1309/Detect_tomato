@@ -2,6 +2,8 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
 from detect_object import *
+import os
+
 
 # Fetch the service account key JSON file contents
 cred = credentials.Certificate("detect-tomato-firebase-adminsdk-dkmtc-9d94023d4e.json")
@@ -21,7 +23,7 @@ class Details:
 
 
 # As an admin, the app has access to read and write all data, regradless of Security Rules
-def getRef(str=''):
+def getRef(str=""):
     tomato_ref = db.reference("tomato/")
     device_ref = db.reference("device/")
     if str == "tomato":
@@ -30,30 +32,35 @@ def getRef(str=''):
         return device_ref
     return tomato_ref, device_ref
 
+
 def valueTranfer(x):
-    x= int(x)
-    if(x == 0):
-        x='Red'
+    x = int(x)
+    if x == 0:
+        x = "Red"
         return x
-    if(x == 1):
-        x='Green'
+    if x == 1:
+        x = "Green"
         return x
-    if(x==2):
-        x='HalfRed'
-        return x    
+    if x == 2:
+        x = "HalfRed"
+        return x
+
 
 def getLastImg(tomato_ref):
     imgLast = str(list(tomato_ref.get().keys())[-1])
     return imgLast
 
 
-def getInfoInit():
-    tomato_ref = getRef("tomato")
-    obj = tomato_ref.get()[getLastImg(tomato_ref)]
+def getInfo(str=""):
+    tomatoAll = getRef("tomato")
+    if str == "":
+        str = getLastImg(tomatoAll)
+    obj = tomatoAll.get()[str]
 
     imgOri = obj["imgOri"]
     imgDetect = obj["imgDetect"]
     total = obj["totalMass"]
+    total = int(total) / 1000
     quantity = obj["quantity"]
 
     img_root = decode(imgOri)
@@ -62,16 +69,15 @@ def getInfoInit():
     details = obj["details"]
     finalDetails = []
     for x in details:
-        if(x!= None):
+        if x != None:
             finalDetail = Details(
                 valueTranfer(x["type"]),
-                x["mass"],
+                int(x["mass"]) / 1000,
                 x["bbox"],
                 x["conf"],
             )
             finalDetails.append(finalDetail)
-    return img_root, img_detected, total, quantity, finalDetails
-
+    return tomatoAll, img_root, img_detected, total, quantity, finalDetails
 
 
 def updateInfo(option="", imgDetect="", quantity="", totalMass="", details={}):
@@ -94,6 +100,8 @@ def detectAndUpload():
         imgAdded = decode(imgAdded)
         imgAdded.save("imgOri.jpg")
         result_detect = detect("imgOri.jpg")
+        if os.path.exists("imgOri.jpg"):
+            os.remove("imgOri.jpg")
 
         path_imgDetect = str(result_detect[0].dirimg).replace("\\", "/")
         path_txt = str(result_detect[0].dirtxt).replace("\\", "/")

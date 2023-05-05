@@ -41,7 +41,7 @@ def mass(dirtxt, dirimg):
     width, height = img.size
     
     total = 0
-    P=7/100
+    P=5/100
     count=1
     for label in labels:
         # print(label.class_name, label.x, label.y, label.w, label.h)
