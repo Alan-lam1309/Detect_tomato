@@ -4,17 +4,18 @@ from PIL import Image
 import math
 import base64
 import io
+import numpy as np
 
 # Load YOLO model
-def detect(src):
-    model = YOLO('last.pt',"v8") 
+def detect(src=''):
+    model = YOLO('best.pt',"v8") 
     results = model.predict(source = src, save = True, save_txt = True)
     # print(results[0].dirtxt)
-    
     return results
+# detect('a.jpg')
 
 class YOLODarknetLabel:
-    def __init__(self, class_name, x, y, w, h, c, m):
+    def __init__(self, class_name, x, y, w, h, c, m, d):
         self.class_name = class_name
         self.x = float(x)
         self.y = float(y)
@@ -22,6 +23,7 @@ class YOLODarknetLabel:
         self.h = float(h)
         self.c = float(c)
         self.m = ''
+        self.d = ''
 
 def read_yolo_darknet_labels_file(file_path):
     labels = []
@@ -30,7 +32,7 @@ def read_yolo_darknet_labels_file(file_path):
         for line in lines:
             values = line.strip().split(' ')
             class_name, x, y, w, h, c = values
-            label = YOLODarknetLabel(class_name, x, y, w, h, c, '')
+            label = YOLODarknetLabel(class_name, x, y, w, h, c, '', '')
             labels.append(label)
     return labels, lines
 
@@ -54,6 +56,74 @@ def mass(dirtxt, dirimg):
         count += 1
     
     return total, labels, lines    
+
+def harvested(labels):
+    mass_average = 110 #g 100-120
+    average_growing_time = 25 #days 20-30
+    mass_growing_aday = math.floor(mass_average/average_growing_time) #g
+    time_to_ripen = 18 #days 15-20
+    degree_of_ripeness = 2/5 #red/green 1/3-1/2
+    time_to_harvest = time_to_ripen * degree_of_ripeness #days   
+    level_growing_day = time_to_harvest / degree_of_ripeness 
+    for label in labels:
+        if label.m < mass_average and label.class_name == 0:
+            difference = mass_average - label.m
+            estimateDay = math.floor(difference / mass_growing_aday) + 1 + time_to_harvest
+            label.d = f'{estimateDay} days left'
+        if label.m >= mass_average and label.class_name == 0:
+            level = ripeness(label)
+            difference = degree_of_ripeness - level
+            estimateDay = math.floor(difference / level_growing_day) + 1
+            label.d = f'{estimateDay} days left'
+        if label.class_name == 1 or label.class_name == 2:
+            label.d = f'Harvest'
+    return labels
+        
+            
+def ripeness(label):
+    img = cv2.imread("imageOri.jpg")
+    height, width, c = img.shape
+    x_on_image = label.x * width
+    y_on_image = label.y * height
+    w_on_image = label.w * width
+    h_on_image = label.h * height
+    x, y, r = (
+    math.floor(x_on_image),
+    math.floor(y_on_image),
+    math.floor((w_on_image + h_on_image ) / 4),
+    )
+    mask = np.zeros_like(img)
+    cv2.circle(mask, (x, y), r, (255, 255, 255), -1)
+    mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+
+    crop_img = cv2.bitwise_and(img, img, mask=mask)
+
+    img_hsv = cv2.cvtColor(crop_img, cv2.COLOR_BGR2HSV)
+
+    lower_red = (0, 100, 100)
+    upper_red = (10, 255, 255)
+
+    lower_orange = (11, 100, 100)
+    upper_orange = (20, 255, 255)
+
+    lower_yellow = (21, 100, 100)
+    upper_yellow = (30, 255, 255)
+
+    lower_green = (45, 100, 100)
+    upper_green = (75, 255, 255)
+
+    mask_red = cv2.inRange(img_hsv, lower_red, upper_red)
+    mask_orange = cv2.inRange(img_hsv, lower_orange, upper_orange)
+    mask_yellow = cv2.inRange(img_hsv, lower_yellow, upper_yellow)
+    mask_green = cv2.inRange(img_hsv, lower_green, upper_green)
+
+    num_red = cv2.countNonZero(mask_red)
+    num_orange = cv2.countNonZero(mask_orange)
+    num_yellow = cv2.countNonZero(mask_yellow)
+    num_green = cv2.countNonZero(mask_green)
+    
+    level = (num_red + num_orange + num_yellow) / num_green
+    return level
 
 def encodeImg(path_img):
     with open(path_img, "rb") as image_file:
