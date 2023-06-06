@@ -28,7 +28,8 @@ while True:
             time1 = device_ref.get()["time1"]
             time2 = device_ref.get()["time2"]
             time3 = device_ref.get()["time3"]
-            while count < 4:
+            step = device_ref.get()["step"]
+            while count < step:
                 if device_ref.get()["addPic"] == "YES":
                     count += 1
                     if str(hour) == time1.split(":")[0]:

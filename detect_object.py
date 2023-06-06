@@ -66,18 +66,18 @@ def mass(dirtxt, dirimg):
 
 
 def harvested(labels):
-    mass_average = 50  # g AVG 
+    mass_average = 40  # g AVG 
 
-    average_growing_time = 25  # days 20-30
+    average_growing_time = 20  # days 20-30
 
     mass_growing_aday = math.floor(mass_average / average_growing_time)  # g
 
-    time_to_ripen = 18  # days 15-20
+    time_to_ripen = 15  # days 15-20
     degree_of_ripeness = 2 / 5  # red/green 1/3-1/2
 
-    time_to_harvest = time_to_ripen * degree_of_ripeness  # 7days
+    time_to_harvest = time_to_ripen * degree_of_ripeness  # 6days
 
-    level_growing_day = degree_of_ripeness / time_to_harvest # % 2/5 / 7
+    level_growing_day = degree_of_ripeness / time_to_harvest # % 2/5 / 6 = 1/15
     count = 1
     for label in labels:
         if label.m < mass_average and int(label.class_name) == 0:
@@ -142,13 +142,22 @@ def ripeness(label):
     num_orange = cv2.countNonZero(mask_orange)
     num_yellow = cv2.countNonZero(mask_yellow)
     num_green = cv2.countNonZero(mask_green)
+    
+    ripelevel = int(num_red) + int(num_orange) + int(num_yellow)
 
-    if int(num_green != 0):
-        level = float(
-            (int(num_red) + int(num_orange) + int(num_yellow)) / int(num_green)
-        )
+    if int(num_green) != 0:
+        if (ripelevel) != 0:
+            if (ripelevel / int(num_green)) < 2/5:
+                level = float(
+                    (ripelevel) / int(num_green)
+                )
+            else:
+                level = 2/5
+        else:
+            level = 0
     else:
-        level = 0
+        level = 2/5
+        
         
     print(level)
     return level

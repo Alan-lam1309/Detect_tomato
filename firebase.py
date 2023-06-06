@@ -5,6 +5,7 @@ from firebase_admin import db
 import detect_object as do
 import connectESP as cnt
 import os
+import shutil
 import datetime
 
 
@@ -49,6 +50,11 @@ class Time:
         self.t1 = t1
         self.t2 = t2
         self.t3 = t3
+
+class Step:
+    def __init__(self, step, distance):
+        self.step = step
+        self.distance = distance
 
 
 # As an admin, the app has access to read and write all data, regradless of Security Rules
@@ -101,12 +107,10 @@ def getInfo(str=""):
     if str == "":
         str = getLastImg(tomatoAll)
     obj = tomatoAll.get()[str]
-    print(obj)
     name_current = f"{str}"
     imgOri = obj["imgOri"]
     imgDetect = obj["imgDetect"]
     total = obj["totalMass"]
-    total = int(total)
 
     img_root = do.decode(imgOri)
     img_detected = do.decode(imgDetect)
@@ -139,6 +143,7 @@ def getInfo(str=""):
     statusSetting = device.get()["status"]
     quantity = Quantity(obj["quantity"], red, green, half)
     time = Time(device.get()["time1"], device.get()["time2"], device.get()["time3"])
+    step = Step(device.get()["step"],device.get()["distance"])
 
     return (
         tomatoall,
@@ -150,6 +155,7 @@ def getInfo(str=""):
         finalDetails,
         statusSetting,
         time,
+        step
     )
 
 
@@ -226,19 +232,16 @@ def detectAndUpload(name=""):
 
         hour, minute, second, date = getTime()
 
-        # stt = getLenTomato(tomato_ref)
+        stt = getLenTomato(tomato_ref)
         updateInfo(
-            f"{date}|{hour}:{minute}:{second}|{name}",
+            f"{stt}|{date}|{hour}:{minute}:{second}|{name}",
             imgOri,
             imgDetect,
             quantity,
             total,
             details,
         )
+        shutil.rmtree('runs')
         device_ref = db.reference("device/")
         device_ref.update({"addPic": "NO"})
 
-
-def a():
-    b = do.encodeImg("r.jpg")
-    print(b)
