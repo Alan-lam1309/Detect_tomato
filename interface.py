@@ -20,6 +20,7 @@ root = tk.Tk()
     step,
 ) = fb.getInfo()
 
+humid = fb.getHumid()
 
 def take_photo():  # function handle INPUT next to SCALE
     device_ref = fb.getRef("device")
@@ -32,7 +33,7 @@ def take_photo():  # function handle INPUT next to SCALE
 
 def watering():  # function handle INPUT next to SCALE
     device_ref = fb.getRef("device")
-    device_ref.update({"watering": 1})
+    device_ref.update({"watering": int(1)})
 
 
 def set_auto():  # function handle INPUT next to SCALE
@@ -44,13 +45,13 @@ def set_auto():  # function handle INPUT next to SCALE
     distance = distance_entry.get().replace(" ", "")
     step = step_entry.get().replace(" ", "")
 
-    if time1 != "" and re.match(pattern, time1):
+    if time1 != "" and re.match(pattern, time1) and 0<=int(time1.split(":")[0])<25 and 0<=int(time1.split(":")[1])<59:
         time1_label.configure(text=f"Time1 ({time1})")
         device_ref.update({"time1": time1})
-    if time2 != "" and re.match(pattern, time2):
+    if time2 != "" and re.match(pattern, time2)and 0<=int(time2.split(":")[0])<25 and 0<=int(time2.split(":")[1])<59:
         time2_label.configure(text=f"Time2 ({time2})")
         device_ref.update({"time2": time2})
-    if time3 != "" and re.match(pattern, time3):
+    if time3 != "" and re.match(pattern, time3)and 0<=int(time3.split(":")[0])<25 and 0<=int(time3.split(":")[1])<59:
         time3_label.configure(text=f"Time3 ({time3})")
         device_ref.update({"time3": time3})
     if distance != "" and step != "":
@@ -58,8 +59,8 @@ def set_auto():  # function handle INPUT next to SCALE
         if valid < 850:
             distance_label.configure(text=f"Distance ({distance})")
             step_label.configure(text=f"Step ({step})")
-            device_ref.update({"distance": distance})
-            device_ref.update({"step": step})
+            device_ref.update({"distance": int(distance)})
+            device_ref.update({"step": int(step)})
 
 
 def handle_selection(event):  # handle selected of widget combobox
@@ -86,11 +87,11 @@ def reloadTK(
     tomatoAll, imgCurrent, imgRoot, imgDetected, totalMass, quantityTomato, details
 ):
     # label_caption_root.configure(text=imgCurrent)
-    img_Root = ImageTk.PhotoImage(imgRoot.resize((340, 450)))
+    img_Root = ImageTk.PhotoImage(imgRoot.resize((280, 370)))
     label_img_root.configure(image=img_Root)
     label_img_root.image = img_Root
 
-    img_Detected = ImageTk.PhotoImage(imgDetected.resize((340, 450)))
+    img_Detected = ImageTk.PhotoImage(imgDetected.resize((280, 370)))
     label_img_detected.config(image=img_Detected)
     label_img_detected.image = img_Detected
 
@@ -99,7 +100,7 @@ def reloadTK(
         text=f"Red tomatoes: {quantityTomato.red}",
     )
     totalhalf_label.configure(
-        text=f"Hal tomatoes: {quantityTomato.half}",
+        text=f"Half tomatoes: {quantityTomato.half}",
     )
     totalgreen_label.configure(
         text=f"Green tomatoes: {quantityTomato.green} ",
@@ -116,7 +117,7 @@ def reloadTK(
         label1 = tk.Label(
             content_frame,
             text=f"{count}",
-            padx=20,
+            padx=15,
             font=font.Font(size=20),
             bg="#b3dbf0",
         )
@@ -124,7 +125,7 @@ def reloadTK(
         label2 = tk.Label(
             content_frame,
             text=f"{x.class_name}",
-            padx=20,
+            padx=15,
             font=font.Font(size=20),
             bg="#b3dbf0",
         )
@@ -132,7 +133,7 @@ def reloadTK(
         label3 = tk.Label(
             content_frame,
             text=f"{x.mass}",
-            padx=20,
+            padx=15,
             font=font.Font(size=20),
             bg="#b3dbf0",
         )
@@ -140,7 +141,7 @@ def reloadTK(
         label4 = tk.Label(
             content_frame,
             text=f"{x.conf}",
-            padx=20,
+            padx=15,
             font=font.Font(size=20),
             bg="#b3dbf0",
         )
@@ -148,7 +149,7 @@ def reloadTK(
         label5 = tk.Label(
             content_frame,
             text=f"{x.harvest}",
-            padx=10,
+            padx=15,
             font=font.Font(size=20),
             bg="#b3dbf0",
         )
@@ -161,90 +162,108 @@ def on_radio_button_click():
     selected_option = var.get()
     device_ref.update({"status": selected_option})
     if selected_option == "auto":
-        auto_frame.place(x=0, y=150)
+        auto_frame.place(x=10, y=100)
         manual_frame.place_forget()
     if selected_option == "manual":
         auto_frame.place_forget()
-        manual_frame.place(x=0, y=200)
+        manual_frame.place(x=10, y=120)
 
 
-# LABEL INFORMATION THESIS
+# LABEL INFORMATION PERSONAL
+personinfo_frame = tk.Frame(root)
+personinfo_frame.pack()
+personinfo_frame.place(x=0, y=0, width=400, height=230)
 image = Image.open("image/logo.png")
 img = ImageTk.PhotoImage(image.resize((100, 100), Image.LANCZOS))
-label_img_root = tk.Label(root, image=img)
+label_img_root = tk.Label(personinfo_frame, image=img)
 label_img_root.pack()
-label_img_root.place(x=100, y=20, width=100)
-
+label_img_root.place(x=70, y=20, width=100)
 label_caption_detected = tk.Label(
-    root, text="GRADUATION THESIS", font=font.Font(size=28, weight="bold"), fg="#125582"
+    personinfo_frame, text="Lâm Quốc Phú - 3119411049", font=font.Font(size=16)
 )
 label_caption_detected.pack()
-label_caption_detected.place(x=750, y=10)
+label_caption_detected.place(x=30, y=150)
 label_caption_detected = tk.Label(
-    root,
+    personinfo_frame, text="Huỳnh Gia Hân - 3119411022", font=font.Font(size=16)
+)
+label_caption_detected.pack()
+label_caption_detected.place(x=30, y=190)
+
+
+# LABEL INFO THESIS
+thesistitle_frame = tk.Frame(root)
+thesistitle_frame.pack()
+thesistitle_frame.place(x=400, y=10, width=1000, height=150)
+label_caption_detected = tk.Label(
+    thesistitle_frame,
+    text="GRADUATION THESIS",
+    font=font.Font(size=28, weight="bold"),
+    fg="#125582",
+)
+label_caption_detected.pack()
+label_caption_detected.place(x=300, y=10)
+label_caption_detected = tk.Label(
+    thesistitle_frame,
     text="Tomato identification and classification system",
     font=font.Font(size=26, weight="bold"),
     fg="#5dafde",
 )
 label_caption_detected.pack()
-label_caption_detected.place(x=550, y=80)
+label_caption_detected.place(x=100, y=70)
 
+
+# Label history
 label_caption_detected = tk.Label(
-    root, text="Lâm Quốc Phú - 3119411049", font=font.Font(size=16)
+    root, text="History of photo shoots", font=font.Font(size=16)
 )
 label_caption_detected.pack()
-label_caption_detected.place(x=30, y=150)
-label_caption_detected = tk.Label(
-    root, text="Huỳnh Gia Hân - 3119411022", font=font.Font(size=16)
-)
-label_caption_detected.pack()
-label_caption_detected.place(x=30, y=190)
+label_caption_detected.place(x=50, y=290)
 
-# Label
-label_caption_detected = tk.Label(
-    root, text="History of photo shoots", font=font.Font(size=15)
-)
-label_caption_detected.pack()
-label_caption_detected.place(x=70, y=290)
-
-combo_box = ttk.Combobox(root, values=tomatoAll, font=font.Font(size=16))
+combo_box = ttk.Combobox(root, values=tomatoAll, font=font.Font(size=16), state='readonly')
 combo_box.pack()
-combo_box.place(x=70, y=330, width=400)
+combo_box.place(x=50, y=330, width=400)
 combo_box.set(imgCurrent)
 combo_box.bind("<<ComboboxSelected>>", handle_selection)
 
 
-# LABEL AND IMAGE ROOT
-label_caption_root = tk.Label(root, text="Original Image", font=font.Font(size=18))
+# LABEL CAPTION AND IMAGE
+cap_img_frame = tk.Frame(root)
+cap_img_frame.pack()
+cap_img_frame.place(x=520, y=140, width=900, height=370)
+label_caption_root = tk.Label(
+    cap_img_frame, text="Original Image", font=font.Font(size=16)
+)
 label_caption_root.pack()
-label_caption_root.place(x=580, y=180)
+label_caption_root.place(x=0, y=0)
 
-img_Root = ImageTk.PhotoImage(imgRoot.resize((340, 450), Image.LANCZOS))
-label_img_root = tk.Label(root, text="")
+# img_Root = ImageTk.PhotoImage(imgRoot.resize((340, 450), Image.LANCZOS))
+img_Root = ImageTk.PhotoImage(imgRoot.resize((280, 370), Image.LANCZOS))
+label_img_root = tk.Label(cap_img_frame, text="")
 label_img_root.configure(image=img_Root)
 label_img_root.pack()
-label_img_root.place(x=800, y=160, width=340)
+label_img_root.place(x=140, y=0, width=270)
 
-
-# LABEL AND IMAGE RESULT
-label_caption_detected = tk.Label(root, text="Detected Image", font=font.Font(size=18))
+label_caption_detected = tk.Label(
+    cap_img_frame, text="Detected Image", font=font.Font(size=16)
+)
 label_caption_detected.pack()
-label_caption_detected.place(x=1250, y=180)
+label_caption_detected.place(x=470, y=0)
 
-img_Detected = ImageTk.PhotoImage(imgDetected.resize((340, 450), Image.LANCZOS))
-label_img_detected = tk.Label(root, image=img_Detected)
+img_Detected = ImageTk.PhotoImage(imgDetected.resize((280, 370), Image.LANCZOS))
+label_img_detected = tk.Label(cap_img_frame, image=img_Detected)
 label_img_detected.pack()
-label_img_detected.place(x=1480, y=160, width=340)
+label_img_detected.place(x=625, y=0, width=270)
 
-# # SETTINGS
-
+# SETTINGS
 radio_frame = tk.Frame(root, border=2, relief="solid", bg="#b3dbf0")
 radio_frame.pack()
-radio_frame.place(x=70, y=580, width=500, height=420)
+radio_frame.place(x=30, y=500, width=430, height=320)
 
-label_setting = tk.Label(root, text="Settings",border=2, relief="solid", font=font.Font(size=15))
+label_setting = tk.Label(
+    root, text="Settings", border=2, relief="solid", font=font.Font(size=14)
+)
 label_setting.pack()
-label_setting.place(x=90, y=560)
+label_setting.place(x=90, y=485)
 
 options = ["auto", "manual"]
 var = tk.StringVar(value=statusSetting)
@@ -267,18 +286,18 @@ rb2 = tk.Radiobutton(
 )
 
 rb1.pack()
-rb1.place(x=10, y=20)
+rb1.place(x=10, y=10)
 rb2.pack()
-rb2.place(x=10, y=80)
+rb2.place(x=10, y=50)
 
 rb1.config(command=on_radio_button_click)
 rb2.config(command=on_radio_button_click)
 
 # AUTO SETTING DISPLAY
-auto_frame = tk.Frame(radio_frame, width=400, height=250, bg="#b3dbf0")
+auto_frame = tk.Frame(radio_frame, width=380, height=200, bg="#b3dbf0")
 if statusSetting == "auto":
     auto_frame.pack()
-    auto_frame.place(x=0, y=150)
+    auto_frame.place(x=10, y=100)
 
 time1_label = tk.Label(
     auto_frame, text=f"Time1 ({time.t1}): ", font=font.Font(size=17), bg="#b3dbf0"
@@ -288,142 +307,156 @@ time1_label.place(x=0, y=10)
 
 time1_entry = tk.Entry(auto_frame, font=font.Font(size=16))
 time1_entry.pack()
-time1_entry.place(x=220, y=10, width=70)
+time1_entry.place(x=180, y=10, width=70)
 
 time2_label = tk.Label(
     auto_frame, text=f"Time2 ({time.t2}): ", font=font.Font(size=17), bg="#b3dbf0"
 )
 time2_label.pack()
-time2_label.place(x=0, y=60)
+time2_label.place(x=0, y=50)
 
 time2_entry = tk.Entry(auto_frame, font=font.Font(size=16))
 time2_entry.pack()
-time2_entry.place(x=220, y=60, width=70)
+time2_entry.place(x=180, y=50, width=70)
 
 time3_label = tk.Label(
-    auto_frame, text=f"Time3 ({time.t3}): ", font=font.Font(size=17), bg="#b3dbf0"
+    auto_frame, text=f"Time3 ({time.t3}): ", font=font.Font(size=18), bg="#b3dbf0"
 )
 time3_label.pack()
-time3_label.place(x=0, y=110)
+time3_label.place(x=0, y=90)
 
 time3_entry = tk.Entry(auto_frame, font=font.Font(size=16))
 time3_entry.pack()
-time3_entry.place(x=220, y=110, width=70)
+time3_entry.place(x=180, y=90, width=70)
 
 distance_label = tk.Label(
     auto_frame,
     text=f"Distance ({step.distance}): ",
-    font=font.Font(size=17),
+    font=font.Font(size=18),
     bg="#b3dbf0",
 )
 distance_label.pack()
-distance_label.place(x=0, y=160)
+distance_label.place(x=0, y=130)
 
-distance_entry = tk.Entry(auto_frame, font=font.Font(size=16))
+distance_entry = tk.Entry(auto_frame, font=font.Font(size=18))
 distance_entry.pack()
-distance_entry.place(x=220, y=160, width=70)
+distance_entry.place(x=180, y=130, width=70)
 
 step_label = tk.Label(
-    auto_frame, text=f"Step ({step.step}): ", font=font.Font(size=17), bg="#b3dbf0"
+    auto_frame, text=f"Step ({step.step}): ", font=font.Font(size=18), bg="#b3dbf0"
 )
 step_label.pack()
-step_label.place(x=0, y=210)
+step_label.place(x=0, y=170)
 
 step_entry = tk.Entry(auto_frame, font=font.Font(size=16))
 step_entry.pack()
-step_entry.place(x=220, y=210, width=70)
+step_entry.place(x=180, y=170, width=70)
 
-save_button = tk.Button(auto_frame, text="Save", command=set_auto)
+save_button = tk.Button(
+    auto_frame, text="Save", command=set_auto, font=font.Font(size=13)
+)
 save_button.pack()
-save_button.place(x=320, y=10)
+save_button.place(x=280, y=10)
 
 
 # MANUAL SETTING DISPLAY
 manual_frame = tk.Frame(radio_frame, width=400, height=130, bg="#b3dbf0")
 if statusSetting == "manual":
     manual_frame.pack()
-    manual_frame.place(x=0, y=150)
+    manual_frame.place(x=10, y=120)
 
 x_label = tk.Label(
-    manual_frame, text="Location(1-85)cm: ", font=font.Font(size=17), bg="#b3dbf0"
+    manual_frame, text="Location(1-85)cm: ", font=font.Font(size=18), bg="#b3dbf0"
 )
 x_label.pack()
 x_label.place(x=0, y=10)
 
 x_entry = tk.Entry(manual_frame, font=font.Font(size=16))
 x_entry.pack()
-x_entry.place(x=240, y=10, width=70)
+x_entry.place(x=210, y=10, width=70)
 
-save_button = tk.Button(manual_frame, text="Take Photo", command=take_photo)
+save_button = tk.Button(
+    manual_frame, text="Take Photo", font=font.Font(size=13), command=take_photo
+)
 save_button.pack()
-save_button.place(x=320, y=10)
+save_button.place(x=295, y=8)
 
 y_label = tk.Label(
-    manual_frame, text="Watering now ", font=font.Font(size=17), bg="#b3dbf0"
+    manual_frame, text="Watering ({humid}%): ", font=font.Font(size=18), bg="#b3dbf0"
 )
 y_label.pack()
 y_label.place(x=0, y=70)
 
-save_button = tk.Button(manual_frame, text="Watering", command=watering)
+save_button = tk.Button(
+    manual_frame, text="Watering", font=font.Font(size=13), command=watering
+)
 save_button.pack()
 save_button.place(x=210, y=70)
 
 
 # LABEL of quantity
 quantity_frame = tk.Frame(
-    root, width=300, height=350, border=2, relief="solid", bg="#b3dbf0"
+    root, width=300, height=280, border=2, relief="solid", bg="#b3dbf0"
 )
 quantity_frame.pack()
-quantity_frame.place(x=620, y=650)
+quantity_frame.place(x=480, y=540)
 
-label_setting = tk.Label(root, text="Infomation quantity",border=2, relief="solid", font=font.Font(size=15))
+label_setting = tk.Label(
+    root, text="Infomation quantity", border=2, relief="solid", font=font.Font(size=14)
+)
 label_setting.pack()
-label_setting.place(x=640, y=630)
+label_setting.place(x=540, y=525)
 
 totalMass_label = tk.Label(
     quantity_frame,
     text=f"Total Quantity: {quantityTomato.total} ",
-    font=font.Font(size=20, weight="bold"),
+    font=font.Font(size=18, weight="bold"),
     bg="#b3dbf0",
 )
 totalMass_label.pack()
-totalMass_label.place(x=5, y=30)
+totalMass_label.place(x=10, y=30)
 
 totalRed_label = tk.Label(
     quantity_frame,
     text=f"Tomatoes Red: {quantityTomato.red}",
-    font=font.Font(size=16),
+    font=font.Font(size=18),
     bg="#b3dbf0",
 )
 totalhalf_label = tk.Label(
     quantity_frame,
-    text=f" Tomatoes Half: {quantityTomato.half}",
-    font=font.Font(size=16),
+    text=f"Tomatoes Half: {quantityTomato.half}",
+    font=font.Font(size=18),
     bg="#b3dbf0",
 )
 totalgreen_label = tk.Label(
     quantity_frame,
     text=f"Tomatoes Green: {quantityTomato.green}",
-    font=font.Font(size=16),
+    font=font.Font(size=18),
     bg="#b3dbf0",
 )
 totalRed_label.pack()
-totalRed_label.place(x=10, y=100)
+totalRed_label.place(x=10, y=80)
 totalhalf_label.pack()
-totalhalf_label.place(x=10, y=170)
+totalhalf_label.place(x=10, y=130)
 totalgreen_label.pack()
-totalgreen_label.place(x=10, y=240)
+totalgreen_label.place(x=10, y=180)
 
 
 # TABLE DISPLAY INFO IMAGE DETECTED
 canvas_frame = tk.Frame(root, borderwidth=2, relief="solid", bg="#b3dbf0")
-canvas_frame.place(x=970, y=650, width=900)
+canvas_frame.place(x=800, y=540, width=700, height=280)
 
-label_setting = tk.Label(root, text="Infomations Detail Image",border=2, relief="solid", font=font.Font(size=15))
+label_setting = tk.Label(
+    root,
+    text="Infomations Detail Image",
+    border=2,
+    relief="solid",
+    font=font.Font(size=14),
+)
 label_setting.pack()
-label_setting.place(x=1050, y=630)
+label_setting.place(x=860, y=525)
 
-canvas = tk.Canvas(canvas_frame, width=700, height=340, bg="#b3dbf0")
+canvas = tk.Canvas(canvas_frame, bg="#b3dbf0")
 canvas.pack(side="left", fill="both", expand=True)
 
 scrollbar = tk.Scrollbar(canvas_frame, orient="vertical", command=canvas.yview)
@@ -436,41 +469,41 @@ content_frame = tk.Frame(canvas, bg="#b3dbf0")
 col_1_label = tk.Label(
     content_frame,
     text="Num",
-    padx=20,
+    padx=15,
     pady=10,
-    font=font.Font(size=20, weight="bold"),
+    font=font.Font(size=18, weight="bold"),
     bg="#b3dbf0",
 )
 col_1_label.grid(row=0, column=0)
 col_2_label = tk.Label(
     content_frame,
     text="Type",
-    padx=20,
-    font=font.Font(size=20, weight="bold"),
+    padx=15,
+    font=font.Font(size=18, weight="bold"),
     bg="#b3dbf0",
 )
 col_2_label.grid(row=0, column=1)
 col_3_label = tk.Label(
     content_frame,
     text="Mass(g)",
-    padx=20,
-    font=font.Font(size=20, weight="bold"),
+    padx=15,
+    font=font.Font(size=18, weight="bold"),
     bg="#b3dbf0",
 )
 col_3_label.grid(row=0, column=2)
 col_3_label = tk.Label(
     content_frame,
     text="Conference",
-    padx=20,
-    font=font.Font(size=20, weight="bold"),
+    padx=15,
+    font=font.Font(size=18, weight="bold"),
     bg="#b3dbf0",
 )
 col_3_label.grid(row=0, column=3)
 col_4_label = tk.Label(
     content_frame,
     text="Estimate",
-    padx=10,
-    font=font.Font(size=20, weight="bold"),
+    padx=15,
+    font=font.Font(size=18, weight="bold"),
     bg="#b3dbf0",
 )
 col_4_label.grid(row=0, column=4)
@@ -479,31 +512,31 @@ count = 0
 for x in details:
     count += 1
     label1 = tk.Label(
-        content_frame, text=f"{count}", padx=20, font=font.Font(size=20), bg="#b3dbf0"
+        content_frame, text=f"{count}", padx=15, font=font.Font(size=18), bg="#b3dbf0"
     )
     label1.grid(row=count, column=0)
     label2 = tk.Label(
         content_frame,
         text=f"{x.class_name}",
-        padx=20,
-        font=font.Font(size=20),
+        padx=15,
+        font=font.Font(size=18),
         bg="#b3dbf0",
     )
     label2.grid(row=count, column=1)
     label3 = tk.Label(
-        content_frame, text=f"{x.mass}", padx=20, font=font.Font(size=20), bg="#b3dbf0"
+        content_frame, text=f"{x.mass}", padx=15, font=font.Font(size=18), bg="#b3dbf0"
     )
     label3.grid(row=count, column=2)
     label4 = tk.Label(
-        content_frame, text=f"{x.conf}", padx=20, font=font.Font(size=20), bg="#b3dbf0"
+        content_frame, text=f"{x.conf}", padx=15, font=font.Font(size=18), bg="#b3dbf0"
     )
     label4.grid(row=count, column=3)
 
     label5 = tk.Label(
         content_frame,
         text=f"{x.harvest}",
-        padx=10,
-        font=font.Font(size=20),
+        padx=15,
+        font=font.Font(size=18),
         bg="#b3dbf0",
     )
     label5.grid(row=count, column=4)
@@ -520,8 +553,10 @@ content_frame.bind("<Configure>", configure_canvas)
 
 def refresh_window():
     device_ref = fb.getRef("device")
+    humid = fb.getHumid()
+    y_label.configure(text=f"Watering ({humid}%)")
     if device_ref.get()["done"] == 1:
-        (
+        (   
             tomatoAll,
             imgCurrent,
             imgRoot,
@@ -544,10 +579,10 @@ def refresh_window():
         )
         device_ref.update({"done": 0})
 
-    root.after(1000, refresh_window)
+    root.after(500, refresh_window)
 
 
-root.after(1000, refresh_window)
+root.after(500, refresh_window)
 root.title("Detect and classify tomatos")
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()

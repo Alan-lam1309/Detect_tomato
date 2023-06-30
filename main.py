@@ -18,7 +18,7 @@ while True:
         print("watering", time)
 
     if device_ref.get()["addPic"] == "YES":
-        if device_ref.get()["status"] == "manual":
+        if device_ref.get()["run"] == 1:
             fb.detectAndUpload("L1")
             print("run man")
             device_ref.update({"done": 1})

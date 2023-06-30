@@ -10,11 +10,11 @@ import datetime
 
 
 # Fetch the service account key JSON file contents
-cred = credentials.Certificate("detect-tomato-firebase-adminsdk-dkmtc-9d94023d4e.json")
+cred = credentials.Certificate("kltn-ae717-firebase-adminsdk-9zpl2-0567858f5a.json")
 
 # Initialize the app with a service account, granting admin privileges
 firebase_admin.initialize_app(
-    cred, {"databaseURL": "https://detect-tomato-default-rtdb.firebaseio.com"}
+    cred, {"databaseURL": "https://kltn-ae717-default-rtdb.firebaseio.com"}
 )
 
 
@@ -50,6 +50,7 @@ class Time:
         self.t1 = t1
         self.t2 = t2
         self.t3 = t3
+
 
 class Step:
     def __init__(self, step, distance):
@@ -95,6 +96,44 @@ def getLenTomato(tomato_ref=""):
     imgLast = len(list(tomato_ref.get().keys()))
     return imgLast
 
+def getHumid():
+    device_ref = getRef("device")
+    humid = device_ref.get()["humid"]
+    result = round((humid-821)/(207-821)*100)
+    return result
+
+def findRelatedImg(str="", arr=[]):
+    ref_tomato = getRef("tomato")
+    id_x = int(str.split("|")[0])
+    id_next = id_x + 1
+    id_prev = id_x - 1
+    time = str[-2:]
+    arr_result = []
+    if time != "_1":
+        while True:
+            if id_prev > 0:
+                print(time)
+                time = arr[id_prev][-2:]
+                if time == "L1" or time == "_1":
+                    arr_result.append(arr[id_prev])
+                    break
+                arr_result.append(arr[id_prev])
+                id_prev -= 1
+            else:
+                break
+    while True:
+        if id_next < len(arr):
+            time = arr[id_next][-2:]
+            if time == "L1" or time == "_1":
+                break
+            arr_result.append(arr[id_next])
+            id_next += 1
+        else:
+            break
+
+    print(arr_result)
+    return arr_result
+
 
 def getInfo(str=""):
     tomatoAll, device = getRef()
@@ -107,6 +146,7 @@ def getInfo(str=""):
     if str == "":
         str = getLastImg(tomatoAll)
     obj = tomatoAll.get()[str]
+
     name_current = f"{str}"
     imgOri = obj["imgOri"]
     imgDetect = obj["imgDetect"]
@@ -116,14 +156,35 @@ def getInfo(str=""):
     img_detected = do.decode(imgDetect)
 
     details = obj["details"]
+
     finalDetails = []
+    quantityTotal = 0
+    if(obj["quantity"] != "Nothings"):
+        quantityTotal = int(obj["quantity"])    
     red = 0
     green = 0
     half = 0
 
+    if str[-2:] != "L1":
+        arrRel = findRelatedImg(str, sorted_items)
+        for id in arrRel:
+            objRel = tomatoAll.get()[id]
+            detailRel = objRel["details"]
+            if objRel["quantity"] != "Nothings":
+                quantityTotal += int(objRel["quantity"])
+            for x in detailRel:
+                if x != None:
+                    if x["type"] == "":
+                        continue
+                    if int(x["type"]) == 2:
+                        red += 1
+                    if int(x["type"]) == 0:
+                        green += 1
+                    if int(x["type"]) == 1:
+                        half += 1
     for x in details:
         if x != None:
-            if(x["type"] == ''):
+            if x["type"] == "":
                 break
             if int(x["type"]) == 2:
                 red += 1
@@ -141,9 +202,9 @@ def getInfo(str=""):
             )
             finalDetails.append(finalDetail)
     statusSetting = device.get()["status"]
-    quantity = Quantity(obj["quantity"], red, green, half)
+    quantity = Quantity(quantityTotal, red, green, half)
     time = Time(device.get()["time1"], device.get()["time2"], device.get()["time3"])
-    step = Step(device.get()["step"],device.get()["distance"])
+    step = Step(device.get()["step"], device.get()["distance"])
 
     return (
         tomatoall,
@@ -155,15 +216,14 @@ def getInfo(str=""):
         finalDetails,
         statusSetting,
         time,
-        step
+        step,
     )
 
 
 def updateInfo(
     option="", imgOri="", imgDetect="", quantity="", totalMass="", details={}
 ):
-    stt = getLenTomato()
-    tomato_ref = db.reference(f"tomato/{stt}")
+    tomato_ref = db.reference(f"tomato")
     child_ref = tomato_ref.child(option)
     child_ref.update(
         {
@@ -229,9 +289,10 @@ def detectAndUpload(name=""):
                 "estimateDay": "",
             }
             details["1"] = detail
+            quantity = "Nothings"
+            total = 0
 
         hour, minute, second, date = getTime()
-
         stt = getLenTomato(tomato_ref)
         updateInfo(
             f"{stt}|{date}|{hour}:{minute}:{second}|{name}",
@@ -241,7 +302,6 @@ def detectAndUpload(name=""):
             total,
             details,
         )
-        shutil.rmtree('runs')
+        shutil.rmtree("runs")
         device_ref = db.reference("device/")
         device_ref.update({"addPic": "NO"})
-

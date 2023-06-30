@@ -15,7 +15,7 @@ def detect(src=""):
     return results
 
 
-# detect('a.jpg')
+# detect('C:/Users/duyth/Downloads/imageOri1.jpg')
 
 
 class YOLODarknetLabel:
@@ -83,13 +83,13 @@ def harvested(labels):
         if label.m < mass_average and int(label.class_name) == 0:
             difference = mass_average - label.m
             estimateDay = (
-                math.floor(difference / mass_growing_aday) + 1 + time_to_harvest
+                math.floor(difference / mass_growing_aday) + time_to_harvest
             )
             label.d = f"{estimateDay} days left"
         if label.m >= mass_average and int(label.class_name) == 0:
             level = ripeness(label)
             difference = degree_of_ripeness - level
-            estimateDay = math.floor(difference / level_growing_day) + 1
+            estimateDay = math.floor(difference / level_growing_day)
             label.d = f"{estimateDay} days left"
         if int(label.class_name) == 1 or int(label.class_name) == 2:
             label.d = f"Harvest"
@@ -102,7 +102,7 @@ def harvested(labels):
 
 
 def ripeness(label):
-    img = cv2.imread("image/r.jpg")
+    img = cv2.imread("imageOri.jpg")
     height, width, c = img.shape
     x_on_image = label.x * width
     y_on_image = label.y * height
